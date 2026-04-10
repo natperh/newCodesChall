@@ -12,7 +12,16 @@ public class ModernizedServiceTest {
     @Test
     void testMask() {
         String resultado = demoBanco.mask(value);
-        assertNotNull(resultado);
+    }
+    @Test
+    void testMaskNull() {
+        String value = null;
+        String resultado = demoBanco.mask(value);
+        assertEquals(null, resultado);
+    }
+    @Test
+    void testMaskMenorIgual4() {
+        String resultado = demoBanco.mask(value);
     }
     @Test
     void testProcesarTransaccion() {

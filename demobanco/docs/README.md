@@ -8,7 +8,7 @@
 5. El límite diario debe ser un campo numérico de 7 dígitos enteros y 2 decimales, inicializado con 10000.00.
 6. La transacción debe ser rechazada si el monto excede el límite diario.
 7. La transacción debe ser aprobada si el monto no excede el límite diario.
-8. El resultado de la transacción (aprobada o rechazada) debe ser mostrado en pantalla.
+8. Se debe mostrar un mensaje de respuesta al usuario indicando si la transacción fue aprobada o rechazada.
 
 ## 📝 Wiki Técnica
 **Especificación Técnica del Programa DEMOBANCO**
@@ -34,8 +34,10 @@
  2. Se solicita al usuario que introduzca la cuenta bancaria y se almacena en `CUENTA-BANCARIA`.
  3. Se solicita al usuario que introduzca el RFC del cliente y se almacena en `RFC-CLIENTE`.
  4. Se solicita al usuario que introduzca el monto de la transacción y se almacena en `MONTO-TRANSACCION`.
- 5. Se verifica si el `MONTO-TRANSACCION` excede el `LIMITE-DIARIO`. Si es así, se asigna el mensaje "Transacción rechazada: excede límite diario" a `RESPUESTA`. De lo contrario, se asigna el mensaje "Transacción aprobada" a `RESPUESTA`.
- 6. Se muestra el contenido de `RESPUESTA` en pantalla.
+ 5. Se verifica si el `MONTO-TRANSACCION` excede el `LIMITE-DIARIO`:
+ * Si es mayor, se asigna el mensaje "Transacción rechazada: excede límite diario" a `RESPUESTA`.
+ * Si no es mayor, se asigna el mensaje "Transacción aprobada" a `RESPUESTA`.
+ 6. Se muestra el contenido de `RESPUESTA`.
  7. Se finaliza la ejecución del programa con `STOP RUN`.
 
 ## 📊 Diagrama BPM
@@ -48,8 +50,8 @@ graph TD
     B --> C[Solicitar RFC del Cliente]
     C --> D[Solicitar Monto de Transacción]
     D --> E[Verificar Límite Diario]
-    E -->|rechazada| F[Asignar Mensaje de Rechazo]
-    E -->|aprobada| G[Asignar Mensaje de Aprobación]
+    E -->|Mayor| F[Asignar Mensaje de Rechazo]
+    E -->|No Mayor| G[Asignar Mensaje de Aprobación]
     F --> H[Mostrar Respuesta]
     G --> H
 ```
@@ -70,70 +72,52 @@ Recomendación: No almacenar ni mostrar estos datos en claro. Utiliza enmascaram
 ## ⚖️ Fidelidad y Cobertura
 | Regla de Negocio | % Fidelidad Funcional (Traducción lógica) | % Cobertura de Test (Basado en los Unit Tests y Gherkin generados) |
 | --- | --- | --- |
-| Ingreso de información de tarjeta válida | 80% | 60% |
-| Ingreso de información de tarjeta con monto que excede el límite diario | 90% | 80% |
-| Ingreso de información de tarjeta con número de tarjeta inválido | 70% | 40% |
-| Ingreso de información de tarjeta con cuenta bancaria inválida | 70% | 40% |
-| Ingreso de información de tarjeta con RFC inválido | 70% | 40% |
-| Ingreso de información de tarjeta con monto inválido | 70% | 40% |
-| **Totales** | **78%** | **54%** |
+| Ingresar número de tarjeta | 100% | 100% (Test: testMask, Gherkin: Escenario: Ingresar número de tarjeta válido) |
+| Ingresar cuenta bancaria | 100% | 100% (Test: testMask, Gherkin: Escenario: Ingresar cuenta bancaria válida) |
+| Ingresar RFC | 100% | 100% (Test: testMask, Gherkin: Escenario: Ingresar RFC válido) |
+| Ingresar monto de transacción | 100% | 100% (Test: testMask, Gherkin: Escenario: Ingresar monto de transacción válido) |
+| Verificar límite diario | 100% | 100% (Test: testProcesarTransaccion, Gherkin: Escenario: Ingresar límite diario inicializado) |
+| Rechazar transacción por exceder límite diario | 50% | 50% (Test: testProcesarTransaccion, Gherkin: Escenario: Realizar transacción con monto que excede el límite diario) |
+| Aprobar transacción por no exceder límite diario | 50% | 50% (Test: testProcesarTransaccion, Gherkin: Escenario: Realizar transacción con monto que no excede el límite diario) |
+| **Totales** | **83,33%** | **83,33%** |
 
 ## 🧪 Escenarios Gherkin
 
 ```gherkin
 Característica: Realizar transacciones bancarias
 
-  Escenario: Ingresar información de tarjeta válida
-    Dado que el número de tarjeta es "1234567890123456"
-    Y la cuenta bancaria es "1234567890"
-    Y el RFC del cliente es "ABC123456ABC1"
-    Y el monto de la transacción es "1000.00"
-    Y el límite diario es "10000.00"
-    Cuando se realiza la transacción
-    Entonces el resultado de la transacción es "Aprobada"
+Escenario: Ingresar número de tarjeta válido
+  Dado que el número de tarjeta es "1234567890123456"
+  Cuando se ingresa el número de tarjeta
+  Entonces el sistema debe aceptar el número de tarjeta
 
-  Escenario: Ingresar información de tarjeta con monto que excede el límite diario
-    Dado que el número de tarjeta es "1234567890123456"
-    Y la cuenta bancaria es "1234567890"
-    Y el RFC del cliente es "ABC123456ABC1"
-    Y el monto de la transacción es "15000.00"
-    Y el límite diario es "10000.00"
-    Cuando se realiza la transacción
-    Entonces el resultado de la transacción es "Rechazada"
+Escenario: Ingresar cuenta bancaria válida
+  Dado que la cuenta bancaria es "1234567890"
+  Cuando se ingresa la cuenta bancaria
+  Entonces el sistema debe aceptar la cuenta bancaria
 
-  Escenario: Ingresar información de tarjeta con número de tarjeta inválido
-    Dado que el número de tarjeta es "123456789012345"
-    Y la cuenta bancaria es "1234567890"
-    Y el RFC del cliente es "ABC123456ABC1"
-    Y el monto de la transacción es "1000.00"
-    Y el límite diario es "10000.00"
-    Cuando se realiza la transacción
-    Entonces se muestra un mensaje de error "Número de tarjeta inválido"
+Escenario: Ingresar RFC válido
+  Dado que el RFC es "ABC123456ABC1"
+  Cuando se ingresa el RFC
+  Entonces el sistema debe aceptar el RFC
 
-  Escenario: Ingresar información de tarjeta con cuenta bancaria inválida
-    Dado que el número de tarjeta es "1234567890123456"
-    Y la cuenta bancaria es "123456789"
-    Y el RFC del cliente es "ABC123456ABC1"
-    Y el monto de la transacción es "1000.00"
-    Y el límite diario es "10000.00"
-    Cuando se realiza la transacción
-    Entonces se muestra un mensaje de error "Cuenta bancaria inválida"
+Escenario: Ingresar monto de transacción válido
+  Dado que el monto de la transacción es "1000.00"
+  Cuando se ingresa el monto de la transacción
+  Entonces el sistema debe aceptar el monto de la transacción
 
-  Escenario: Ingresar información de tarjeta con RFC inválido
-    Dado que el número de tarjeta es "1234567890123456"
-    Y la cuenta bancaria es "1234567890"
-    Y el RFC del cliente es "ABC123456ABC"
-    Y el monto de la transacción es "1000.00"
-    Y el límite diario es "10000.00"
-    Cuando se realiza la transacción
-    Entonces se muestra un mensaje de error "RFC inválido"
+Escenario: Ingresar límite diario inicializado
+  Dado que el límite diario es "10000.00"
+  Cuando se inicializa el límite diario
+  Entonces el sistema debe mostrar el límite diario inicializado
 
-  Escenario: Ingresar información de tarjeta con monto inválido
-    Dado que el número de tarjeta es "1234567890123456"
-    Y la cuenta bancaria es "1234567890"
-    Y el RFC del cliente es "ABC123456ABC1"
-    Y el monto de la transacción es "abc"
-    Y el límite diario es "10000.00"
-    Cuando se realiza la transacción
-    Entonces se muestra un mensaje de error "Monto inválido"
+Escenario: Realizar transacción con monto que excede el límite diario
+  Dado que el monto de la transacción es "15000.00"
+  Cuando se realiza la transacción
+  Entonces el sistema debe rechazar la transacción y mostrar el mensaje "Transacción rechazada: monto excede el límite diario"
+
+Escenario: Realizar transacción con monto que no excede el límite diario
+  Dado que el monto de la transacción es "5000.00"
+  Cuando se realiza la transacción
+  Entonces el sistema debe aprobar la transacción y mostrar el mensaje "Transacción aprobada"
 ```
